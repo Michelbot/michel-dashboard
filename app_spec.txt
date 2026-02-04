@@ -1,0 +1,257 @@
+# Michel's Project Dashboard
+
+A production-ready project management dashboard inspired by Nim's Dashboard with smooth animations and pixel-perfect design.
+
+## Tech Stack
+- Frontend: Next.js 14 (App Router)
+- Language: TypeScript (strict mode)
+- Styling: Tailwind CSS (dark mode only)
+- Drag & Drop: @dnd-kit/core + @dnd-kit/sortable
+- State Management: Zustand + localStorage persistence
+- Icons: lucide-react
+- Date Handling: date-fns
+
+## Features (8 total)
+
+### 1. Project Layout & Navigation
+- Three-column layout: Sidebar (left), Main Kanban (center), Details Panel (right)
+- Responsive sidebar with project list and user profile
+- Top navigation bar with search and filters
+- Dark theme with slate-900 background and orange-500 accents
+- Smooth transitions between views
+
+**Test Steps:**
+- Sidebar displays project list correctly
+- Navigation elements are clickable and functional
+- Layout is responsive and maintains structure
+- Color scheme matches specification (slate-900, orange-500)
+
+### 2. Kanban Board Structure
+- Three columns: "To Do", "In Progress", "Done"
+- Column headers with task counts
+- Visual distinction between columns
+- Smooth animations when columns update
+- Empty state handling for columns with no tasks
+
+**Test Steps:**
+- All three columns render correctly
+- Task counts display accurately in headers
+- Empty columns show appropriate messaging
+- Column styling matches design (borders, spacing, colors)
+
+### 3. Task Cards Display
+- Compact task cards with: title, description, priority badge, assignee avatar, due date
+- Priority indicators: High (red), Medium (orange), Low (gray)
+- Status indicators with colored dots
+- Tags/labels with pill-style design
+- Truncated text with hover to see full content
+
+**Test Steps:**
+- Task cards display all information correctly
+- Priority badges show correct colors
+- Avatars render properly
+- Due dates format correctly (using date-fns)
+- Hover states work smoothly
+
+### 4. Drag & Drop Functionality
+- Drag tasks between columns (To Do ↔ In Progress ↔ Done)
+- Drag to reorder within same column
+- Visual feedback during drag (lifted card, drop zones highlighted)
+- Smooth animations (60fps) during drag operations
+- Persist new positions to state
+
+**Test Steps:**
+- Can drag task from "To Do" to "In Progress"
+- Can drag task from "In Progress" to "Done"
+- Can reorder tasks within same column
+- Drop zones highlight on drag over
+- Card returns to original position if dropped outside valid zone
+- State updates correctly after drop
+
+### 5. Task Detail Modal
+- Click any task card to open detail modal
+- Modal shows: full title, description, priority, assignee, due date, comments section
+- Edit mode for task properties
+- Close modal with X button or ESC key
+- Dark overlay with smooth fade-in/fade-out animation
+
+**Test Steps:**
+- Clicking task opens modal with correct data
+- Modal displays all task details
+- Edit fields are functional
+- ESC key closes modal
+- Click outside modal closes it
+- Animations are smooth (fade in/out)
+
+### 6. Add New Task
+- "+" button in each column header to add task to that column
+- Modal form with fields: title (required), description, priority, assignee, due date
+- Form validation (title required)
+- Cancel button to discard
+- Create button adds task to correct column
+
+**Test Steps:**
+- Click "+" button opens create modal
+- Form fields are functional
+- Cannot submit without title
+- Created task appears in correct column
+- Task has unique ID
+- Modal closes after creation
+
+### 7. Zustand Store & State Management
+- Global state with Zustand store for: tasks, columns, filters, selected task
+- Actions: addTask, updateTask, deleteTask, moveTask, reorderTask
+- localStorage persistence (auto-save on every state change)
+- Hydration on app load from localStorage
+- Type-safe state and actions
+
+**Test Steps:**
+- State updates reflect immediately in UI
+- Refresh page - data persists from localStorage
+- Multiple operations (add, move, delete) work correctly
+- No console errors related to state management
+- State structure matches TypeScript types
+
+### 8. Polish & Responsive Design
+- Smooth animations everywhere (hover states, transitions, drag & drop)
+- Responsive breakpoints: mobile (< 768px), tablet (768-1024px), desktop (> 1024px)
+- Mobile: stacked layout with tabs for columns
+- Tablet: two-column layout
+- Desktop: full three-column layout with sidebar and right panel
+- Loading states and skeleton screens
+- Micro-interactions (button hover, card lift, etc.)
+
+**Test Steps:**
+- Animations are smooth (60fps, no jank)
+- Test on mobile viewport (< 768px) - layout adapts
+- Test on tablet viewport (768-1024px) - layout adapts
+- Test on desktop viewport (> 1024px) - full layout
+- Hover states work on all interactive elements
+- No layout shift or broken styles at any breakpoint
+
+## Design Guidelines
+- **Color Palette:**
+  - Background: slate-900, slate-800
+  - Text: slate-100, slate-300
+  - Accent: orange-500, orange-600
+  - Success: green-500
+  - Warning: yellow-500
+  - Error: red-500
+  - Borders: slate-700
+
+- **Typography:**
+  - Font: System fonts (default Next.js)
+  - Headers: font-semibold
+  - Body: font-normal
+  - Sizes: text-xs, text-sm, text-base, text-lg, text-xl
+
+- **Spacing:**
+  - Consistent use of Tailwind spacing scale
+  - Card padding: p-4
+  - Column gap: gap-4
+  - Section margins: mt-6, mb-6
+
+- **Animations:**
+  - Transitions: transition-all duration-200 ease-in-out
+  - Hover: hover:scale-105, hover:shadow-lg
+  - Drag: opacity-50 during drag
+  - All animations must be 60fps smooth
+
+## File Structure
+```
+michel-dashboard/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout with providers
+│   │   ├── page.tsx            # Main dashboard page
+│   │   └── globals.css         # Global Tailwind styles
+│   ├── components/
+│   │   ├── Sidebar.tsx         # Left navigation sidebar
+│   │   ├── KanbanBoard.tsx     # Main kanban container
+│   │   ├── KanbanColumn.tsx    # Individual column component
+│   │   ├── TaskCard.tsx        # Task card component
+│   │   ├── TaskModal.tsx       # Task detail/edit modal
+│   │   ├── AddTaskModal.tsx    # New task creation modal
+│   │   └── RightPanel.tsx      # Right details panel
+│   ├── store/
+│   │   └── useStore.ts         # Zustand store with types
+│   ├── types/
+│   │   └── types.ts            # TypeScript interfaces
+│   └── lib/
+│       └── utils.ts            # Utility functions
+├── public/
+│   └── avatars/                # User avatar images
+├── package.json
+├── tsconfig.json
+├── tailwind.config.ts
+├── next.config.js
+├── init.sh                     # Dev server startup script
+└── README.md
+```
+
+## Data Structure
+
+### Task Interface
+```typescript
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  assignee: {
+    name: string;
+    avatar: string;
+  };
+  dueDate: Date;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Initial Sample Data
+- Provide 8-10 sample tasks distributed across columns
+- Mix of priorities and assignees
+- Realistic task descriptions for a software project
+- Due dates spread across next 2 weeks
+
+## Success Criteria
+- ✅ Pixel-perfect design matching specifications
+- ✅ All 8 features fully functional and tested
+- ✅ Smooth 60fps animations throughout
+- ✅ Drag & drop works flawlessly
+- ✅ Data persists correctly via localStorage
+- ✅ Fully responsive (mobile, tablet, desktop)
+- ✅ Zero TypeScript errors
+- ✅ Zero console errors or warnings
+- ✅ Build succeeds without issues (`npm run build`)
+- ✅ Production-ready code quality
+
+## Quality Standards
+- **Code:**
+  - TypeScript strict mode with no `any` types
+  - Proper component composition
+  - Clean, readable code with good naming
+  - Reusable components where appropriate
+
+- **Performance:**
+  - Fast initial load (< 2s)
+  - Smooth interactions (60fps)
+  - Efficient re-renders (React best practices)
+  - Optimized bundle size
+
+- **Testing:**
+  - Manual UI testing via Playwright for ALL features
+  - Screenshot evidence for each feature
+  - Browser console must be error-free
+  - Test on multiple viewport sizes
+
+## Time Estimate
+40 minutes maximum for complete implementation.
+
+## Notes
+- This is a production-ready application, not a prototype
+- Every detail matters: colors, spacing, animations, interactions
+- Must make people say "WOW" when they see it
+- Reference: Nim's Dashboard design patterns

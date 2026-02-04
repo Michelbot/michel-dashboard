@@ -1,0 +1,21 @@
+⚠️ STOP - NOUVELLE MÉTHODOLOGIE À SUIVRE
+
+Lis IMMÉDIATEMENT ce fichier qui contient toutes les instructions :
+
+/root/clawd/projects/michel-dashboard/INSTRUCTIONS-IMMEDIATE.md
+
+Ce fichier te dit :
+1. Quels fichiers lire avant de continuer
+2. Ton nouveau rôle (orchestrateur multi-agents)
+3. Le workflow exact à suivre
+4. Les règles critiques à respecter
+
+NE CODE RIEN avant d'avoir lu :
+- README-METHODOLOGIE.md
+- app_spec.txt
+- PLAN-COMPLET.md
+- prompts/orchestrator_prompt.md
+
+Une fois lu, suis les instructions d'initialisation dans INSTRUCTIONS-IMMEDIATE.md.
+
+Commence maintenant ! 🚀
