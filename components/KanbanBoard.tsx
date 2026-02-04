@@ -93,7 +93,12 @@ export default function KanbanBoard() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-6 h-full p-6">
+      {/* Responsive layout:
+          - Mobile: Single column, stacked vertically
+          - Tablet (md): Two columns side by side
+          - Desktop (lg+): Three columns side by side
+      */}
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-full p-4 md:p-6">
         {columns.map((column) => (
           <DroppableColumn
             key={column.id}

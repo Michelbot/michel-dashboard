@@ -1,7 +1,9 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Column, Task } from '@/types/types';
+import { useStore } from '@/store/useStore';
 import SortableTaskCard from './SortableTaskCard';
+import { Plus } from 'lucide-react';
 
 interface DroppableColumnProps {
   column: Column;
@@ -9,27 +11,44 @@ interface DroppableColumnProps {
 }
 
 export default function DroppableColumn({ column, tasks }: DroppableColumnProps) {
+  const { openAddModal } = useStore();
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
 
   const taskIds = tasks.map((task) => task.id);
 
+  const handleAddTask = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openAddModal(column.status);
+  };
+
   return (
     <div
       ref={setNodeRef}
       className={`
-        flex-1 bg-slate-800 rounded-lg border-2 p-4
+        flex-1 bg-slate-800 rounded-lg border-2 p-3 md:p-4
         transition-all duration-200
+        min-h-[300px] md:min-h-[400px]
         ${isOver ? 'border-orange-500/50 bg-orange-500/5' : 'border-slate-700'}
       `}
     >
       {/* Column Header */}
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700">
         <h2 className="text-lg font-semibold text-slate-100">{column.title}</h2>
-        <span className="px-2.5 py-1 text-sm font-semibold bg-slate-700 text-slate-300 rounded-full border border-slate-600">
-          {tasks.length}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-1 text-sm font-semibold bg-slate-700 text-slate-300 rounded-full border border-slate-600">
+            {tasks.length}
+          </span>
+          <button
+            onClick={handleAddTask}
+            className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 hover:scale-110 transition-all duration-200 shadow-lg"
+            aria-label="Add new task"
+            title="Add new task"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Task List */}

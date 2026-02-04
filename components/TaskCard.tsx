@@ -18,8 +18,9 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
     <div
       className={`
         group relative bg-slate-800 border border-slate-700 rounded-lg p-4
-        cursor-move transition-all duration-200
-        hover:scale-105 hover:shadow-lg hover:border-slate-600
+        cursor-pointer transition-all duration-200 ease-in-out
+        hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/10 hover:border-slate-600
+        active:scale-[0.98]
         ${isDragging ? 'opacity-50' : 'opacity-100'}
       `}
     >
