@@ -22,6 +22,7 @@ import { useStore } from '@/lib/store';
 import { Task, TaskStatus } from '@/lib/types';
 import { Plus } from 'lucide-react';
 import TaskCard from './TaskCard';
+import MobileColumnTabs from './MobileColumnTabs';
 
 const columns = [
   { id: 'ideas', title: '💡 Idées/Plans', status: 'ideas' as TaskStatus },
@@ -123,10 +124,15 @@ function KanbanColumn({
 
 export default function NewKanbanBoard() {
   const tasks = useStore((state) => state.tasks);
+  const getFilteredTasks = useStore((state) => state.getFilteredTasks);
   const moveTask = useStore((state) => state.moveTask);
   const openAddModal = useStore((state) => state.openAddModal);
   const openTaskModal = useStore((state) => state.openTaskModal);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [mobileActiveColumn, setMobileActiveColumn] = useState<TaskStatus>('todo');
+
+  // Use filtered tasks for display
+  const filteredTasks = getFilteredTasks();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -166,7 +172,7 @@ export default function NewKanbanBoard() {
   };
 
   const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter((task) => task.status === status);
+    return filteredTasks.filter((task) => task.status === status);
   };
 
   const handleAddTask = (status: TaskStatus) => {
@@ -177,6 +183,9 @@ export default function NewKanbanBoard() {
     openTaskModal(taskId);
   };
 
+  // Get the active mobile column data
+  const activeMobileColumnData = columns.find(c => c.status === mobileActiveColumn);
+
   return (
     <DndContext
       sensors={sensors}
@@ -184,7 +193,16 @@ export default function NewKanbanBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 p-6 overflow-x-auto h-full pb-6">
+      {/* Mobile Column Tabs */}
+      <div className="px-4 sm:px-6">
+        <MobileColumnTabs
+          activeColumn={mobileActiveColumn}
+          onColumnChange={setMobileActiveColumn}
+        />
+      </div>
+
+      {/* Desktop: All columns */}
+      <div className="hidden lg:flex gap-4 p-6 overflow-x-auto h-full pb-6">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
@@ -195,6 +213,19 @@ export default function NewKanbanBoard() {
             onTaskClick={handleTaskClick}
           />
         ))}
+      </div>
+
+      {/* Mobile: Single column */}
+      <div className="lg:hidden p-4">
+        {activeMobileColumnData && (
+          <KanbanColumn
+            title={activeMobileColumnData.title}
+            status={activeMobileColumnData.status}
+            tasks={getTasksByStatus(activeMobileColumnData.status)}
+            onAddTask={handleAddTask}
+            onTaskClick={handleTaskClick}
+          />
+        )}
       </div>
 
       <DragOverlay>

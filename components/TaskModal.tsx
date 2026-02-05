@@ -2,15 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Priority } from '@/lib/types';
+import { Priority, TaskStatus } from '@/lib/types';
 import { format } from 'date-fns';
-import { X, User, Tag, AlertCircle, Plus, Trash2, CheckSquare } from 'lucide-react';
+import { X, User, Tag, AlertCircle, Plus, Trash2, CheckSquare, ArrowRight } from 'lucide-react';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
   medium: 'bg-orange-500/20 text-orange-400 border-orange-500/50',
   low: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
 };
+
+const statusOptions: { value: TaskStatus; label: string; icon: string }[] = [
+  { value: 'ideas', label: 'Idées', icon: '💡' },
+  { value: 'backlog', label: 'Backlog', icon: '📋' },
+  { value: 'todo', label: 'À Faire', icon: '📝' },
+  { value: 'inprogress', label: 'En Cours', icon: '⚡' },
+  { value: 'review', label: 'Révision', icon: '🔍' },
+  { value: 'done', label: 'Terminé', icon: '✅' },
+];
 
 export default function TaskModal() {
   const {
@@ -20,9 +29,11 @@ export default function TaskModal() {
     closeTaskModal,
     updateTask,
     deleteTask,
+    moveTask,
     toggleSubtask,
     addSubtask,
     removeSubtask,
+    showToastMessage,
   } = useStore();
 
   const task = tasks.find((t) => t.id === taskModalId);
@@ -175,6 +186,36 @@ export default function TaskModal() {
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter assignee name"
             />
+          </div>
+
+          {/* Quick Status Change */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              <ArrowRight size={16} className="inline mr-1" />
+              Déplacer vers
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    if (task.status !== option.value) {
+                      moveTask(task.id, option.value);
+                      showToastMessage(`Tâche déplacée vers ${option.label}`, 'success');
+                    }
+                  }}
+                  disabled={task.status === option.value}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                    task.status === option.value
+                      ? 'bg-orange-500/20 text-orange-400 border-orange-500/50'
+                      : 'bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <span>{option.icon}</span>
+                  <span>{option.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Progress */}

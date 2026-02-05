@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import SearchBar from './SearchBar';
 
 export default function MainDashboard() {
   const tasks = useStore((state) => state.tasks);
@@ -28,6 +29,9 @@ export default function MainDashboard() {
           DEVELOPMENT
         </span>
       </div>
+
+      {/* Search Bar */}
+      <SearchBar />
 
       {/* Greeting Card */}
       <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 rounded-xl p-8 border border-purple-700/30">

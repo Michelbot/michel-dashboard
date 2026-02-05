@@ -1,12 +1,29 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, TaskStatus, Project } from './types';
+import { Task, TaskStatus, Project, Priority } from './types';
 import { initialTasks, initialProjects } from './data';
+
+interface FilterState {
+  searchQuery: string;
+  priorityFilter: Priority | 'all';
+  showToast: boolean;
+  toastMessage: string;
+  toastType: 'success' | 'error' | 'info';
+}
 
 interface DashboardStore {
   tasks: Task[];
   projects: Project[];
   currentActivity: string | null;
+
+  // Filter states (not persisted)
+  searchQuery: string;
+  priorityFilter: Priority | 'all';
+
+  // Toast state
+  showToast: boolean;
+  toastMessage: string;
+  toastType: 'success' | 'error' | 'info';
 
   // Modal states
   isAddModalOpen: boolean;
@@ -20,6 +37,15 @@ interface DashboardStore {
   deleteTask: (id: string) => void;
   moveTask: (id: string, status: TaskStatus) => void;
   setCurrentActivity: (activity: string | null) => void;
+
+  // Filter actions
+  setSearchQuery: (query: string) => void;
+  setPriorityFilter: (priority: Priority | 'all') => void;
+  getFilteredTasks: () => Task[];
+
+  // Toast actions
+  showToastMessage: (message: string, type?: 'success' | 'error' | 'info') => void;
+  hideToast: () => void;
 
   // Subtask actions
   toggleSubtask: (taskId: string, subtaskId: string) => void;
@@ -38,19 +64,32 @@ interface DashboardStore {
 
 export const useStore = create<DashboardStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       tasks: initialTasks,
       projects: initialProjects,
       currentActivity: null,
+
+      // Filter states
+      searchQuery: '',
+      priorityFilter: 'all',
+
+      // Toast state
+      showToast: false,
+      toastMessage: '',
+      toastType: 'success',
+
+      // Modal states
       isAddModalOpen: false,
       addModalStatus: null,
       isTaskModalOpen: false,
       taskModalId: null,
 
-      addTask: (task) =>
+      addTask: (task) => {
         set((state) => ({
           tasks: [...state.tasks, task],
-        })),
+        }));
+        get().showToastMessage('Tâche créée avec succès', 'success');
+      },
 
       updateTask: (id, updates) =>
         set((state) => ({
@@ -61,10 +100,12 @@ export const useStore = create<DashboardStore>()(
           ),
         })),
 
-      deleteTask: (id) =>
+      deleteTask: (id) => {
         set((state) => ({
           tasks: state.tasks.filter((task) => task.id !== id),
-        })),
+        }));
+        get().showToastMessage('Tâche supprimée', 'info');
+      },
 
       moveTask: (id, status) =>
         set((state) => ({
@@ -87,6 +128,38 @@ export const useStore = create<DashboardStore>()(
 
       setCurrentActivity: (activity) =>
         set({ currentActivity: activity }),
+
+      // Filter actions
+      setSearchQuery: (query) =>
+        set({ searchQuery: query }),
+
+      setPriorityFilter: (priority) =>
+        set({ priorityFilter: priority }),
+
+      getFilteredTasks: () => {
+        const { tasks, searchQuery, priorityFilter } = get();
+        return tasks.filter((task) => {
+          const matchesSearch = searchQuery === '' ||
+            task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            task.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+
+          const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+
+          return matchesSearch && matchesPriority;
+        });
+      },
+
+      // Toast actions
+      showToastMessage: (message, type = 'success') => {
+        set({ showToast: true, toastMessage: message, toastType: type });
+        setTimeout(() => {
+          set({ showToast: false });
+        }, 3000);
+      },
+
+      hideToast: () =>
+        set({ showToast: false }),
 
       toggleSubtask: (taskId, subtaskId) =>
         set((state) => ({
@@ -153,10 +226,13 @@ export const useStore = create<DashboardStore>()(
           }),
         })),
 
-      archiveCompletedTasks: () =>
+      archiveCompletedTasks: () => {
+        const count = get().tasks.filter((task) => task.status === 'done').length;
         set((state) => ({
           tasks: state.tasks.filter((task) => task.status !== 'done'),
-        })),
+        }));
+        get().showToastMessage(`${count} tâche${count > 1 ? 's' : ''} archivée${count > 1 ? 's' : ''}`, 'success');
+      },
         
       openAddModal: (status) =>
         set({ isAddModalOpen: true, addModalStatus: status }),
@@ -172,6 +248,11 @@ export const useStore = create<DashboardStore>()(
     }),
     {
       name: 'michel-dashboard-storage',
+      partialize: (state) => ({
+        tasks: state.tasks,
+        projects: state.projects,
+        currentActivity: state.currentActivity,
+      }),
     }
   )
 );
