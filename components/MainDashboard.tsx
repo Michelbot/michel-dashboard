@@ -22,9 +22,9 @@ export default function MainDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-slate-50">Michel Dashboard</h1>
-        <span className="px-3 py-1 bg-purple-900/50 text-purple-300 text-xs font-semibold rounded-full border border-purple-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-50">Michel Dashboard</h1>
+        <span className="px-3 py-1 bg-purple-900/50 text-purple-300 text-xs font-semibold rounded-full border border-purple-700 self-start sm:self-auto">
           DEVELOPMENT
         </span>
       </div>
@@ -38,22 +38,22 @@ export default function MainDashboard() {
           <p className="text-slate-300">
             Votre espace de travail personnel & centre de commande
           </p>
-          <div className="flex justify-center gap-3 pt-2">
-            <button onClick={() => alert("Bouton cliqué!")} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-sm font-medium border border-slate-600">
-              🧠 Mes Pensées
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
+            <button onClick={() => alert("Bouton cliqué!")} className="px-3 sm:px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium border border-slate-600 cursor-pointer">
+              🧠 Pensées
             </button>
-            <button onClick={() => alert("Bouton cliqué!")} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-sm font-medium border border-slate-600">
-              📊 Analytiques
+            <button onClick={() => alert("Bouton cliqué!")} className="px-3 sm:px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium border border-slate-600 cursor-pointer">
+              📊 Stats
             </button>
-            <button onClick={() => alert("Bouton cliqué!")} className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-sm font-medium border border-slate-600">
-              ⚙️ Paramètres
+            <button onClick={() => alert("Bouton cliqué!")} className="px-3 sm:px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg transition-all duration-200 text-xs sm:text-sm font-medium border border-slate-600 cursor-pointer">
+              ⚙️ Config
             </button>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-[#1a1f2e] rounded-xl p-6 border border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-200">
           <div className="flex items-center gap-3">
             <div className="text-3xl">📋</div>
@@ -151,7 +151,7 @@ export default function MainDashboard() {
           <span className="text-xl">🔋</span>
           <h3 className="text-lg font-semibold text-slate-50">État Système</h3>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-green-500">✅</span>
             <span className="text-slate-300">API Connectée</span>
