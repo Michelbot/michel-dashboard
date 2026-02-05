@@ -45,9 +45,10 @@ export default function TaskModal() {
   const [editedTags, setEditedTags] = useState('');
   const [newSubtaskText, setNewSubtaskText] = useState('');
 
-  // Initialize form values when task changes
+  // Initialize form values when task changes - intentional sync with prop
   useEffect(() => {
     if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditedTitle(task.title);
       setEditedDescription(task.description);
       setEditedPriority(task.priority);

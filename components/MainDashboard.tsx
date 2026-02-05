@@ -7,7 +7,7 @@ import OpenClawStatus from './OpenClawStatus';
 
 export default function MainDashboard() {
   const tasks = useStore((state) => state.tasks);
-  const { connected, status, setActiveView } = useOpenClawStore();
+  const { connected, setActiveView } = useOpenClawStore();
 
   const activeTasks = tasks.filter((t) => t.status !== 'done').length;
   const totalTasks = tasks.length;

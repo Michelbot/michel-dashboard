@@ -7,7 +7,7 @@ interface KanbanColumnProps {
   tasks: Task[];
 }
 
-export default function KanbanColumn({ title, status, tasks }: KanbanColumnProps) {
+export default function KanbanColumn({ title, tasks }: KanbanColumnProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Column Header */}

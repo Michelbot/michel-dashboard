@@ -132,8 +132,9 @@ export default function NewKanbanBoard() {
   const [mobileActiveColumn, setMobileActiveColumn] = useState<TaskStatus>('todo');
   const [mounted, setMounted] = useState(false);
 
-  // Fix hydration mismatch with @dnd-kit
+  // Fix hydration mismatch with @dnd-kit - intentional pattern for SSR
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

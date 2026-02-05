@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
               });
             }
           }
-        } catch (error) {
+        } catch {
           sendLog({
             id: `log-${++logId}`,
             level: 'warn',

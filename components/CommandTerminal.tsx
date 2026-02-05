@@ -174,7 +174,7 @@ export default function CommandTerminal() {
       <div className="p-4 border-t border-slate-700/50">
         {!connected && (
           <div className="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
-            OpenClaw n'est pas connecte. Verifiez que le gateway est actif.
+            OpenClaw non connecte. Verifiez que le gateway est actif.
           </div>
         )}
         <div className="flex gap-2">

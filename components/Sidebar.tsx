@@ -88,7 +88,7 @@ export default function Sidebar() {
           </div>
           <div className="bg-slate-800 rounded-lg p-3 border-l-4 border-cyan-500">
             <p className="text-sm text-slate-300 italic">
-              Construction de quelque chose d'incroyable...
+              Construction de quelque chose incroyable...
             </p>
           </div>
         </div>

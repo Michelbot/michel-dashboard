@@ -34,9 +34,10 @@ export default function AddTaskModal() {
   const [sendToOpenClaw, setSendToOpenClaw] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  // Reset form when modal opens
+  // Reset form when modal opens - intentional setState in effect for form reset
   useEffect(() => {
     if (isAddModalOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle('');
       setDescription('');
       setPriority('medium');

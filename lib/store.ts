@@ -3,14 +3,6 @@ import { persist } from 'zustand/middleware';
 import { Task, TaskStatus, Project, Priority } from './types';
 import { initialTasks, initialProjects } from './data';
 
-interface FilterState {
-  searchQuery: string;
-  priorityFilter: Priority | 'all';
-  showToast: boolean;
-  toastMessage: string;
-  toastType: 'success' | 'error' | 'info';
-}
-
 interface DashboardStore {
   tasks: Task[];
   projects: Project[];

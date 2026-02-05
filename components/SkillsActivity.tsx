@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useOpenClawStore } from '@/lib/openclawStore';
 import {
   Zap,
@@ -18,49 +18,60 @@ interface SkillInfo {
   usageCount: number;
 }
 
-// Mock skills data - in real implementation, this would come from the API
-const mockSkills: SkillInfo[] = [
-  { name: 'web-search', description: 'Search the web', active: true, usageCount: 45, lastUsed: new Date(Date.now() - 1000 * 60 * 5) },
-  { name: 'code-gen', description: 'Generate code', active: true, usageCount: 128, lastUsed: new Date(Date.now() - 1000 * 60 * 2) },
-  { name: 'image-gen', description: 'Generate images', active: false, usageCount: 23 },
-  { name: 'file-manager', description: 'Manage files', active: true, usageCount: 67, lastUsed: new Date(Date.now() - 1000 * 60 * 15) },
-  { name: 'telegram-bot', description: 'Telegram integration', active: true, usageCount: 89, lastUsed: new Date(Date.now() - 1000 * 60 * 1) },
-  { name: 'memory-manager', description: 'Manage memory', active: true, usageCount: 156, lastUsed: new Date(Date.now() - 1000 * 60 * 3) },
-];
+// Generate mock skills with relative timestamps
+function createMockSkills(): SkillInfo[] {
+  const now = Date.now();
+  return [
+    { name: 'web-search', description: 'Search the web', active: true, usageCount: 45, lastUsed: new Date(now - 1000 * 60 * 5) },
+    { name: 'code-gen', description: 'Generate code', active: true, usageCount: 128, lastUsed: new Date(now - 1000 * 60 * 2) },
+    { name: 'image-gen', description: 'Generate images', active: false, usageCount: 23 },
+    { name: 'file-manager', description: 'Manage files', active: true, usageCount: 67, lastUsed: new Date(now - 1000 * 60 * 15) },
+    { name: 'telegram-bot', description: 'Telegram integration', active: true, usageCount: 89, lastUsed: new Date(now - 1000 * 60 * 1) },
+    { name: 'memory-manager', description: 'Manage memory', active: true, usageCount: 156, lastUsed: new Date(now - 1000 * 60 * 3) },
+  ];
+}
 
 export default function SkillsActivity() {
   const { connected, status } = useOpenClawStore();
-  const [skills, setSkills] = useState<SkillInfo[]>(mockSkills);
+  const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  // Update time periodically for relative timestamps
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // In a real implementation, fetch skills from the API
-  const refreshSkills = async () => {
+  const refreshSkills = useCallback(async () => {
     setLoading(true);
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 500));
-    setSkills(mockSkills);
+    setSkills(createMockSkills());
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (connected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       refreshSkills();
     }
-  }, [connected]);
+  }, [connected, refreshSkills]);
 
-  const activeSkills = skills.filter((s) => s.active);
-  const totalUsage = skills.reduce((acc, s) => acc + s.usageCount, 0);
+  const activeSkills = useMemo(() => skills.filter((s) => s.active), [skills]);
+  const totalUsage = useMemo(() => skills.reduce((acc, s) => acc + s.usageCount, 0), [skills]);
 
-  const formatLastUsed = (date?: Date) => {
+  const formatLastUsed = useCallback((date?: Date) => {
     if (!date) return 'Jamais';
-    const diff = Date.now() - date.getTime();
+    const diff = currentTime - date.getTime();
     const minutes = Math.floor(diff / 1000 / 60);
     if (minutes < 1) return 'A l\'instant';
     if (minutes < 60) return `Il y a ${minutes}m`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `Il y a ${hours}h`;
     return `Il y a ${Math.floor(hours / 24)}j`;
-  };
+  }, [currentTime]);
 
   return (
     <div className="flex flex-col h-full bg-slate-900/50 rounded-xl border border-slate-700/50">

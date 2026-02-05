@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Menu, X, Plus } from 'lucide-react';
 import { useStore } from '@/lib/store';
 

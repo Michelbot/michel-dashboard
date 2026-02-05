@@ -54,7 +54,7 @@ function runOpenClawAgent(message: string, options: {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { taskId, title, description, priority, tags } = body;
+    const { title, description, priority, tags } = body;
 
     if (!title) {
       return NextResponse.json(
