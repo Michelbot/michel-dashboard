@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Task, TaskStatus, Project, Priority, ExecutionState } from './types';
 import { initialTasks, initialProjects } from './data';
-import { isExecutionAgent } from './execution/types';
+import { isExecutionAgent, extractAgentId } from './execution/types';
 
 interface DashboardStore {
   tasks: Task[];
@@ -106,12 +106,28 @@ export const useStore = create<DashboardStore>()(
       },
 
       moveTask: (id, status) => {
+        console.log('[Store] moveTask called:', { id, status });
         const task = get().tasks.find((t) => t.id === id);
+
+        if (!task) {
+          console.error('[Store] moveTask: Task not found!', id);
+          return;
+        }
+
+        console.log('[Store] moveTask task found:', {
+          title: task.title,
+          currentStatus: task.status,
+          assignedTo: task.assignedTo,
+          isAgent: isExecutionAgent(task.assignedTo)
+        });
+
         const shouldTriggerExecution =
           status === 'inprogress' &&
           task &&
           task.status !== 'inprogress' &&
           isExecutionAgent(task.assignedTo);
+
+        console.log('[Store] moveTask shouldTriggerExecution:', shouldTriggerExecution);
 
         set((state) => ({
           tasks: state.tasks.map((t) =>
@@ -254,10 +270,26 @@ export const useStore = create<DashboardStore>()(
 
       // Execution actions
       triggerExecution: async (taskId) => {
+        console.log('[Execution] triggerExecution called for task:', taskId);
         const task = get().tasks.find((t) => t.id === taskId);
-        if (!task) return;
+
+        if (!task) {
+          console.error('[Execution] Task not found!', taskId);
+          return;
+        }
+
+        // Extract agent ID from assignedTo field
+        const agentId = extractAgentId(task.assignedTo);
+
+        console.log('[Execution] Task found:', {
+          title: task.title,
+          status: task.status,
+          assignedTo: task.assignedTo,
+          agentId: agentId
+        });
 
         get().updateExecutionState(taskId, 'queued');
+        console.log('[Execution] State set to queued, calling API...');
 
         try {
           const response = await fetch('/api/execution/start', {
@@ -265,6 +297,7 @@ export const useStore = create<DashboardStore>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               taskId: task.id,
+              agentId: agentId, // Pass the extracted agent ID
               title: task.title,
               description: task.description,
               priority: task.priority,
@@ -273,11 +306,14 @@ export const useStore = create<DashboardStore>()(
           });
 
           const data = await response.json();
+          console.log('[Execution] API response:', data);
 
           if (data.success && data.executionId) {
+            console.log('[Execution] SUCCESS - executionId:', data.executionId);
             get().updateExecutionState(taskId, 'executing', data.executionId);
-            get().showToastMessage(`Exécution démarrée: ${task.title}`, 'success');
+            get().showToastMessage(data.message || `Exécution démarrée: ${task.title}`, 'success');
           } else {
+            console.error('[Execution] FAILED - error:', data.error);
             get().updateExecutionState(taskId, 'idle');
             set((state) => ({
               tasks: state.tasks.map((t) =>
@@ -289,6 +325,7 @@ export const useStore = create<DashboardStore>()(
             get().showToastMessage(data.error || 'Échec du démarrage', 'error');
           }
         } catch (error) {
+          console.error('[Execution] EXCEPTION:', error);
           get().updateExecutionState(taskId, 'idle');
           const message = error instanceof Error ? error.message : 'Erreur inconnue';
           set((state) => ({

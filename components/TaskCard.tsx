@@ -7,6 +7,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useState } from 'react';
 import { ExecutionBadge } from './ExecutionStatus';
+import { AgentBadge } from './AgentSelector';
+import { isExecutionAgent, extractAgentId } from '@/lib/execution/types';
 
 interface TaskCardProps {
   task: Task;
@@ -61,9 +63,13 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
         </span>
       </div>
 
-      {/* Auto Badges & Execution Status */}
-      {(task.autoCreated || task.autoPickup || task.executionState) && (
+      {/* Agent Badge & Auto Badges & Execution Status */}
+      {(task.autoCreated || task.autoPickup || task.executionState || isExecutionAgent(task.assignedTo)) && (
         <div className="flex flex-wrap gap-2 mb-3">
+          {/* Show agent badge if assigned to an agent */}
+          {isExecutionAgent(task.assignedTo) && (
+            <AgentBadge agentId={extractAgentId(task.assignedTo) || 'developer'} />
+          )}
           {task.autoCreated && (
             <span className="px-2 py-1 text-xs font-medium bg-purple-900/30 text-purple-300 rounded border border-purple-700 flex items-center gap-1">
               🤖 Auto-créé

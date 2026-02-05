@@ -19,6 +19,9 @@ export interface Link {
 // Execution status for real-time task execution
 export type ExecutionState = 'idle' | 'queued' | 'executing' | 'paused' | 'review_needed';
 
+// Agent IDs for specialized execution
+export type AgentId = 'developer' | 'researcher' | 'content' | 'devops' | 'qa';
+
 export interface Task {
   id: string;
   title: string;
@@ -28,6 +31,7 @@ export interface Task {
   project: string;
   tags: string[];
   assignedTo: string;
+  agentId?: AgentId;           // Specific agent for execution
   createdAt: Date;
   updatedAt: Date;
   startedAt?: Date;

@@ -76,6 +76,12 @@ export interface WebhookPayload {
 export interface StartExecutionRequest {
   taskId: string;
   force?: boolean;  // Force start even if already running
+  agentId?: string; // Specialized agent to use (developer, researcher, content, devops, qa)
+  // Task data for execution
+  title?: string;
+  description?: string;
+  priority?: string;
+  subtasks?: Array<{ id: string; text: string; completed: boolean }>;
 }
 
 export interface StartExecutionResponse {
@@ -110,15 +116,67 @@ export interface ExecutionQueueState {
   maxConcurrent: number;
 }
 
-// Agent assignment check
-export const EXECUTION_AGENTS = ['OpenClaw AI', 'Michel', 'openclaw', 'michel'] as const;
+// Agent assignment check - includes legacy names and new specialized agents
+export const EXECUTION_AGENTS = [
+  // Legacy names
+  'OpenClaw AI',
+  'Michel',
+  'openclaw',
+  'michel',
+  // Specialized agents
+  'developer',
+  'researcher',
+  'content',
+  'devops',
+  'qa',
+  // Agent full names
+  'Developer Agent',
+  'Researcher Agent',
+  'Content Agent',
+  'DevOps Agent',
+  'QA Agent',
+] as const;
+
 export type ExecutionAgent = typeof EXECUTION_AGENTS[number];
+
+// Keywords that indicate an AI agent assignment
+const AGENT_KEYWORDS = [
+  'openclaw', 'ai', 'agent', 'developer', 'researcher',
+  'content', 'devops', 'qa', 'michel', 'code architect',
+  'knowledge navigator', 'documentation writer',
+  'infrastructure engineer', 'quality assurance'
+];
 
 export function isExecutionAgent(assignedTo: string): boolean {
   const normalized = assignedTo.toLowerCase().trim();
-  return EXECUTION_AGENTS.some(agent =>
-    normalized === agent.toLowerCase() ||
-    normalized.includes('openclaw') ||
-    normalized.includes('ai')
-  );
+
+  // Direct match
+  if (EXECUTION_AGENTS.some(agent => normalized === agent.toLowerCase())) {
+    return true;
+  }
+
+  // Keyword match
+  return AGENT_KEYWORDS.some(keyword => normalized.includes(keyword));
+}
+
+/**
+ * Extract agent ID from assignedTo string
+ */
+export function extractAgentId(assignedTo: string): string | null {
+  const normalized = assignedTo.toLowerCase().trim();
+
+  // Direct agent ID match
+  const directIds = ['developer', 'researcher', 'content', 'devops', 'qa'];
+  for (const id of directIds) {
+    if (normalized === id || normalized.includes(id)) {
+      return id;
+    }
+  }
+
+  // Legacy mappings
+  if (normalized.includes('openclaw') || normalized.includes('michel') || normalized.includes('ai')) {
+    return 'developer'; // Default to developer for legacy names
+  }
+
+  return null;
 }
