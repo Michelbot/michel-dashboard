@@ -7,7 +7,7 @@ interface DashboardStore {
   tasks: Task[];
   projects: Project[];
   currentActivity: string | null;
-  
+
   // Modal states
   isAddModalOpen: boolean;
   addModalStatus: TaskStatus | null;
@@ -20,7 +20,15 @@ interface DashboardStore {
   deleteTask: (id: string) => void;
   moveTask: (id: string, status: TaskStatus) => void;
   setCurrentActivity: (activity: string | null) => void;
-  
+
+  // Subtask actions
+  toggleSubtask: (taskId: string, subtaskId: string) => void;
+  addSubtask: (taskId: string, text: string) => void;
+  removeSubtask: (taskId: string, subtaskId: string) => void;
+
+  // Archive actions
+  archiveCompletedTasks: () => void;
+
   // Modal actions
   openAddModal: (status: TaskStatus) => void;
   closeAddModal: () => void;
@@ -79,6 +87,76 @@ export const useStore = create<DashboardStore>()(
 
       setCurrentActivity: (activity) =>
         set({ currentActivity: activity }),
+
+      toggleSubtask: (taskId, subtaskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) => {
+            if (task.id !== taskId) return task;
+
+            const updatedSubtasks = task.subtasks.map((st) =>
+              st.id === subtaskId ? { ...st, completed: !st.completed } : st
+            );
+            const completedCount = updatedSubtasks.filter((st) => st.completed).length;
+            const progress = updatedSubtasks.length > 0
+              ? Math.round((completedCount / updatedSubtasks.length) * 100)
+              : 0;
+
+            return {
+              ...task,
+              subtasks: updatedSubtasks,
+              progress,
+              updatedAt: new Date(),
+            };
+          }),
+        })),
+
+      addSubtask: (taskId, text) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) => {
+            if (task.id !== taskId) return task;
+
+            const newSubtask = {
+              id: `st-${Date.now()}`,
+              text,
+              completed: false,
+            };
+            const updatedSubtasks = [...task.subtasks, newSubtask];
+            const completedCount = updatedSubtasks.filter((st) => st.completed).length;
+            const progress = Math.round((completedCount / updatedSubtasks.length) * 100);
+
+            return {
+              ...task,
+              subtasks: updatedSubtasks,
+              progress,
+              updatedAt: new Date(),
+            };
+          }),
+        })),
+
+      removeSubtask: (taskId, subtaskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) => {
+            if (task.id !== taskId) return task;
+
+            const updatedSubtasks = task.subtasks.filter((st) => st.id !== subtaskId);
+            const completedCount = updatedSubtasks.filter((st) => st.completed).length;
+            const progress = updatedSubtasks.length > 0
+              ? Math.round((completedCount / updatedSubtasks.length) * 100)
+              : 0;
+
+            return {
+              ...task,
+              subtasks: updatedSubtasks,
+              progress,
+              updatedAt: new Date(),
+            };
+          }),
+        })),
+
+      archiveCompletedTasks: () =>
+        set((state) => ({
+          tasks: state.tasks.filter((task) => task.status !== 'done'),
+        })),
         
       openAddModal: (status) =>
         set({ isAddModalOpen: true, addModalStatus: status }),

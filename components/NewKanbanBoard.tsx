@@ -80,9 +80,12 @@ function KanbanColumn({
   const taskIds = tasks.map((t) => t.id);
 
   return (
-    <div className={`flex flex-col min-w-[300px] max-w-[320px] bg-[#0f1419] rounded-xl border transition-colors duration-200 ${
-      isOver ? 'border-orange-500 bg-orange-900/10' : 'border-slate-700'
-    }`}>
+    <div
+      id={`column-${status}`}
+      className={`flex flex-col min-w-[300px] max-w-[320px] bg-[#0f1419] rounded-xl border transition-colors duration-200 ${
+        isOver ? 'border-orange-500 bg-orange-900/10' : 'border-slate-700'
+      }`}
+    >
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-slate-200">{title}</h3>

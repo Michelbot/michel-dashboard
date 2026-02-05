@@ -1,6 +1,7 @@
 'use client';
 
 import { Task, Priority } from '@/lib/types';
+import { useStore } from '@/lib/store';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useState } from 'react';
@@ -18,6 +19,7 @@ const priorityStyles: Record<Priority, { bg: string; text: string; dot: string }
 
 export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
   const [showAllSubtasks, setShowAllSubtasks] = useState(false);
+  const toggleSubtask = useStore((state) => state.toggleSubtask);
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const visibleSubtasks = showAllSubtasks ? task.subtasks : task.subtasks.slice(0, 5);
 
@@ -91,21 +93,33 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
       {task.subtasks.length > 0 && (
         <div className="space-y-2 my-3">
           {visibleSubtasks.map(subtask => (
-            <div key={subtask.id} className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                checked={subtask.completed}
-                readOnly
-                className="w-4 h-4 mt-0.5 rounded border-slate-600 bg-slate-700 cursor-pointer flex-shrink-0"
-              />
-              <span className={`text-sm ${subtask.completed ? "line-through text-slate-500" : "text-slate-300"}`}>
-                {subtask.completed ? "☑️" : "☐"} {subtask.text}
+            <div
+              key={subtask.id}
+              className="flex items-start gap-2 group/subtask cursor-pointer hover:bg-slate-700/30 rounded px-1 py-0.5 -mx-1 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSubtask(task.id, subtask.id);
+              }}
+            >
+              <div className={`w-4 h-4 mt-0.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                subtask.completed
+                  ? 'bg-orange-500 border-orange-500'
+                  : 'border-slate-600 bg-slate-700 group-hover/subtask:border-orange-500/50'
+              }`}>
+                {subtask.completed && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span className={`text-sm transition-colors ${subtask.completed ? "line-through text-slate-500" : "text-slate-300"}`}>
+                {subtask.text}
               </span>
             </div>
           ))}
           {task.subtasks.length > 5 && (
             <button
-              className="text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+              className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowAllSubtasks(!showAllSubtasks);

@@ -5,15 +5,29 @@ import { ChevronUp, ChevronDown, Plus, Archive } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 export default function EnhancedRightPanel() {
-  const { openAddModal } = useStore();
+  const { openAddModal, archiveCompletedTasks, tasks } = useStore();
+  const completedCount = tasks.filter(t => t.status === 'done').length;
+
+  const handleArchive = () => {
+    if (completedCount === 0) return;
+    archiveCompletedTasks();
+  };
 
   return (
     <aside className="hidden xl:block fixed right-0 top-0 w-80 h-screen overflow-y-auto bg-[#0f1419] border-l border-slate-700 p-4 space-y-4">
       {/* Top Actions */}
       <div className="flex gap-2">
-        <button className="flex-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer flex items-center justify-center gap-2">
+        <button
+          onClick={handleArchive}
+          disabled={completedCount === 0}
+          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 ${
+            completedCount > 0
+              ? 'bg-slate-800 hover:bg-green-900/50 text-slate-300 hover:text-green-300'
+              : 'bg-slate-800/50 text-slate-500 cursor-not-allowed'
+          }`}
+        >
           <Archive size={16} />
-          Archiver Terminées
+          Archiver ({completedCount})
         </button>
         <button
           onClick={() => openAddModal('todo')}
@@ -125,9 +139,20 @@ function MentalStateCard() {
 }
 
 function IdleModeCard() {
-  const { tasks } = useStore();
+  const { tasks, openAddModal } = useStore();
   const todoCount = tasks.filter(t => t.status === 'todo').length;
   const ideasCount = tasks.filter(t => t.status === 'ideas').length;
+
+  const scrollToColumn = (columnId: string) => {
+    const column = document.getElementById(`column-${columnId}`);
+    if (column) {
+      column.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      column.classList.add('ring-2', 'ring-orange-500');
+      setTimeout(() => {
+        column.classList.remove('ring-2', 'ring-orange-500');
+      }, 2000);
+    }
+  };
 
   return (
     <div className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-xl border border-purple-700/50 p-4">
@@ -150,7 +175,10 @@ function IdleModeCard() {
 
       {/* Quick Actions */}
       <div className="space-y-2">
-        <button className="w-full bg-slate-800/50 hover:bg-slate-700 rounded-lg p-3 text-left transition-all duration-200 cursor-pointer group">
+        <button
+          onClick={() => scrollToColumn('todo')}
+          className="w-full bg-slate-800/50 hover:bg-slate-700 rounded-lg p-3 text-left transition-all duration-200 cursor-pointer group"
+        >
           <div className="flex items-center gap-3">
             <span className="text-2xl group-hover:scale-110 transition-transform">📋</span>
             <div>
@@ -160,7 +188,10 @@ function IdleModeCard() {
           </div>
         </button>
 
-        <button className="w-full bg-slate-800/50 hover:bg-slate-700 rounded-lg p-3 text-left transition-all duration-200 cursor-pointer group">
+        <button
+          onClick={() => scrollToColumn('ideas')}
+          className="w-full bg-slate-800/50 hover:bg-slate-700 rounded-lg p-3 text-left transition-all duration-200 cursor-pointer group"
+        >
           <div className="flex items-center gap-3">
             <span className="text-2xl group-hover:scale-110 transition-transform">💡</span>
             <div>
@@ -172,7 +203,10 @@ function IdleModeCard() {
       </div>
 
       {/* CTA Button */}
-      <button className="w-full mt-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+      <button
+        onClick={() => openAddModal('todo')}
+        className="w-full mt-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+      >
         <span>⚙️</span>
         <span>Commencer quelque chose</span>
       </button>

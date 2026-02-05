@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Priority } from '@/lib/types';
 import { format } from 'date-fns';
-import { X, User, Tag, AlertCircle } from 'lucide-react';
+import { X, User, Tag, AlertCircle, Plus, Trash2, CheckSquare } from 'lucide-react';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
@@ -20,6 +20,9 @@ export default function TaskModal() {
     closeTaskModal,
     updateTask,
     deleteTask,
+    toggleSubtask,
+    addSubtask,
+    removeSubtask,
   } = useStore();
 
   const task = tasks.find((t) => t.id === taskModalId);
@@ -29,6 +32,7 @@ export default function TaskModal() {
   const [editedPriority, setEditedPriority] = useState<Priority>('medium');
   const [editedAssigneeName, setEditedAssigneeName] = useState('');
   const [editedTags, setEditedTags] = useState('');
+  const [newSubtaskText, setNewSubtaskText] = useState('');
 
   // Initialize form values when task changes
   useEffect(() => {
@@ -183,6 +187,81 @@ export default function TaskModal() {
                 className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${task.progress}%` }}
               />
+            </div>
+          </div>
+
+          {/* Subtasks */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              <CheckSquare size={16} className="inline mr-1" />
+              Subtasks ({task.subtasks.filter(st => st.completed).length}/{task.subtasks.length})
+            </label>
+
+            {/* Add new subtask */}
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newSubtaskText}
+                onChange={(e) => setNewSubtaskText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newSubtaskText.trim()) {
+                    addSubtask(task.id, newSubtaskText.trim());
+                    setNewSubtaskText('');
+                  }
+                }}
+                className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                placeholder="Ajouter une sous-tâche..."
+              />
+              <button
+                onClick={() => {
+                  if (newSubtaskText.trim()) {
+                    addSubtask(task.id, newSubtaskText.trim());
+                    setNewSubtaskText('');
+                  }
+                }}
+                disabled={!newSubtaskText.trim()}
+                className="px-3 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 cursor-pointer"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+
+            {/* Subtask list */}
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {task.subtasks.length === 0 ? (
+                <p className="text-sm text-slate-500 italic py-2">Aucune sous-tâche</p>
+              ) : (
+                task.subtasks.map((subtask) => (
+                  <div
+                    key={subtask.id}
+                    className="flex items-center gap-2 group bg-slate-900/50 rounded-lg px-3 py-2 hover:bg-slate-900 transition-colors"
+                  >
+                    <button
+                      onClick={() => toggleSubtask(task.id, subtask.id)}
+                      className={`w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center transition-colors cursor-pointer ${
+                        subtask.completed
+                          ? 'bg-orange-500 border-orange-500'
+                          : 'border-slate-600 hover:border-orange-500/50'
+                      }`}
+                    >
+                      {subtask.completed && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                    <span className={`flex-1 text-sm ${subtask.completed ? 'line-through text-slate-500' : 'text-slate-300'}`}>
+                      {subtask.text}
+                    </span>
+                    <button
+                      onClick={() => removeSubtask(task.id, subtask.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all cursor-pointer"
+                    >
+                      <Trash2 size={14} className="text-red-400" />
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
