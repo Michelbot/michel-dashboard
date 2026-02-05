@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useStore } from '@/store/useStore';
-import { Priority } from '@/types/types';
+import { useStore } from '@/lib/store';
+import { Priority } from '@/lib/types';
 import { format } from 'date-fns';
-import { X, Calendar, User, Tag, AlertCircle } from 'lucide-react';
+import { X, User, Tag, AlertCircle } from 'lucide-react';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
@@ -15,20 +15,19 @@ const priorityStyles: Record<Priority, string> = {
 export default function TaskModal() {
   const {
     tasks,
-    selectedTaskId,
+    taskModalId,
     isTaskModalOpen,
     closeTaskModal,
     updateTask,
     deleteTask,
   } = useStore();
 
-  const task = tasks.find((t) => t.id === selectedTaskId);
+  const task = tasks.find((t) => t.id === taskModalId);
 
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedPriority, setEditedPriority] = useState<Priority>('medium');
   const [editedAssigneeName, setEditedAssigneeName] = useState('');
-  const [editedDueDate, setEditedDueDate] = useState('');
   const [editedTags, setEditedTags] = useState('');
 
   // Initialize form values when task changes
@@ -37,8 +36,7 @@ export default function TaskModal() {
       setEditedTitle(task.title);
       setEditedDescription(task.description);
       setEditedPriority(task.priority);
-      setEditedAssigneeName(task.assignee.name);
-      setEditedDueDate(format(task.dueDate, 'yyyy-MM-dd'));
+      setEditedAssigneeName(task.assignedTo);
       setEditedTags(task.tags.join(', '));
     }
   }, [task]);
@@ -60,16 +58,12 @@ export default function TaskModal() {
   if (!isTaskModalOpen || !task) return null;
 
   const handleSave = () => {
-    if (selectedTaskId) {
-      updateTask(selectedTaskId, {
+    if (taskModalId) {
+      updateTask(taskModalId, {
         title: editedTitle,
         description: editedDescription,
         priority: editedPriority,
-        assignee: {
-          ...task.assignee,
-          name: editedAssigneeName,
-        },
-        dueDate: new Date(editedDueDate),
+        assignedTo: editedAssigneeName,
         tags: editedTags.split(',').map((tag) => tag.trim()).filter(Boolean),
       });
       closeTaskModal();
@@ -77,8 +71,8 @@ export default function TaskModal() {
   };
 
   const handleDelete = () => {
-    if (selectedTaskId && confirm('Are you sure you want to delete this task?')) {
-      deleteTask(selectedTaskId);
+    if (taskModalId && confirm('Are you sure you want to delete this task?')) {
+      deleteTask(taskModalId);
       closeTaskModal();
     }
   };
@@ -179,18 +173,17 @@ export default function TaskModal() {
             />
           </div>
 
-          {/* Due Date */}
+          {/* Progress */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              <Calendar size={16} className="inline mr-1" />
-              Due Date
+              Progress: {task.progress}%
             </label>
-            <input
-              type="date"
-              value={editedDueDate}
-              onChange={(e) => setEditedDueDate(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-            />
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div
+                className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${task.progress}%` }}
+              />
+            </div>
           </div>
 
           {/* Tags */}

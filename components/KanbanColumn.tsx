@@ -1,9 +1,9 @@
-import { Task, Status } from '@/types/types';
+import { Task, TaskStatus } from '@/lib/types';
 import TaskCard from './TaskCard';
 
 interface KanbanColumnProps {
   title: string;
-  status: Status;
+  status: TaskStatus;
   tasks: Task[];
 }
 

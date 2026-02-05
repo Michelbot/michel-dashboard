@@ -1,19 +1,26 @@
-import { Task, Priority } from '@/types/types';
-import { format } from 'date-fns';
-import { Calendar, User } from 'lucide-react';
+'use client';
+
+import { Task, Priority } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { useState } from 'react';
 
 interface TaskCardProps {
   task: Task;
   isDragging?: boolean;
 }
 
-const priorityStyles: Record<Priority, string> = {
-  high: 'bg-red-500/20 text-red-400 border-red-500/30',
-  medium: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  low: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+const priorityStyles: Record<Priority, { bg: string; text: string; dot: string }> = {
+  high: { bg: 'bg-red-500/20 text-red-400 border-red-500/30', text: 'text-red-400', dot: 'bg-red-500' },
+  medium: { bg: 'bg-orange-500/20 text-orange-400 border-orange-500/30', text: 'text-orange-400', dot: 'bg-orange-500' },
+  low: { bg: 'bg-gray-500/20 text-gray-400 border-gray-500/30', text: 'text-gray-400', dot: 'bg-gray-500' },
 };
 
 export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
+  const [showAllSubtasks, setShowAllSubtasks] = useState(false);
+  const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+  const visibleSubtasks = showAllSubtasks ? task.subtasks : task.subtasks.slice(0, 5);
+
   return (
     <div
       className={`
@@ -24,29 +31,120 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
         ${isDragging ? 'opacity-50' : 'opacity-100'}
       `}
     >
-      {/* Header: Title + Priority */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      {/* Header: Status Dot + Title + Priority */}
+      <div className="flex items-start gap-3 mb-3">
+        {/* Status Dot */}
+        <div className={`w-2 h-2 rounded-full ${priorityStyles[task.priority].dot} mt-2 flex-shrink-0`} />
+
         <h3 className="text-base font-medium text-slate-100 line-clamp-2 flex-1">
           {task.title}
         </h3>
+
         <span
           className={`
-            px-2 py-1 text-xs font-semibold rounded border uppercase tracking-wide
-            ${priorityStyles[task.priority]}
+            px-2 py-1 text-xs font-semibold rounded border uppercase tracking-wide flex-shrink-0
+            ${priorityStyles[task.priority].bg}
           `}
         >
           {task.priority}
         </span>
       </div>
 
+      {/* Auto Badges */}
+      {(task.autoCreated || task.autoPickup) && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {task.autoCreated && (
+            <span className="px-2 py-1 text-xs font-medium bg-purple-900/30 text-purple-300 rounded border border-purple-700 flex items-center gap-1">
+              🤖 Auto-créé
+            </span>
+          )}
+          {task.autoPickup && (
+            <span className="px-2 py-1 text-xs font-medium bg-cyan-900/30 text-cyan-300 rounded border border-cyan-700 flex items-center gap-1">
+              🔄 Récupération auto
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      <div className="mb-3">
+        <div className="flex justify-between items-center text-xs text-slate-400 mb-1.5">
+          <span className="font-medium">Progression</span>
+          <span className={`font-bold ${task.progress >= 80 ? 'text-green-500' : task.progress >= 50 ? 'text-orange-500' : 'text-slate-400'}`}>
+            {task.progress}% • {completedSubtasks}/{task.subtasks.length}
+          </span>
+        </div>
+        <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${task.progress}%` }}
+          />
+        </div>
+      </div>
+
       {/* Description */}
-      <p className="text-sm text-slate-300 line-clamp-3 mb-4">
+      <p className="text-sm text-slate-300 line-clamp-2 mb-3">
         {task.description}
       </p>
 
+      {/* Subtasks */}
+      {task.subtasks.length > 0 && (
+        <div className="space-y-2 my-3">
+          {visibleSubtasks.map(subtask => (
+            <div key={subtask.id} className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={subtask.completed}
+                readOnly
+                className="w-4 h-4 mt-0.5 rounded border-slate-600 bg-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <span className={`text-sm ${subtask.completed ? "line-through text-slate-500" : "text-slate-300"}`}>
+                {subtask.completed ? "☑️" : "☐"} {subtask.text}
+              </span>
+            </div>
+          ))}
+          {task.subtasks.length > 5 && (
+            <button
+              className="text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAllSubtasks(!showAllSubtasks);
+              }}
+            >
+              {showAllSubtasks
+                ? 'Voir moins...'
+                : `Voir ${task.subtasks.length - 5} de plus...`
+              }
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Links Section */}
+      {task.links.length > 0 && (
+        <div className="border-t border-slate-700 pt-3 mt-3">
+          <div className="text-xs font-semibold text-slate-400 mb-2">🔗 LIENS</div>
+          <div className="space-y-1">
+            {task.links.map(link => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span>{link.icon}</span>
+                <span className="truncate">{link.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tags */}
       {task.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {task.tags.map((tag) => (
             <span
               key={tag}
@@ -58,25 +156,16 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
         </div>
       )}
 
-      {/* Footer: Assignee + Due Date */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-700">
-        {/* Assignee */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-            <User size={16} className="text-white" />
-          </div>
-          <span className="text-sm font-medium text-slate-300">
-            {task.assignee.name}
+      {/* Footer: Timestamps */}
+      <div className="flex items-center gap-3 text-xs text-slate-500 pt-3 mt-3 border-t border-slate-700 flex-wrap">
+        {task.startedAt && (
+          <span className="flex items-center gap-1">
+            ⏱️ Début: {formatDistanceToNow(task.startedAt, { locale: fr, addSuffix: true })}
           </span>
-        </div>
-
-        {/* Due Date */}
-        <div className="flex items-center gap-1.5 text-slate-400">
-          <Calendar size={14} />
-          <span className="text-xs font-medium">
-            {format(task.dueDate, 'MMM d')}
-          </span>
-        </div>
+        )}
+        <span className="flex items-center gap-1">
+          🔄 Modifié: {formatDistanceToNow(task.updatedAt, { locale: fr, addSuffix: true })}
+        </span>
       </div>
     </div>
   );

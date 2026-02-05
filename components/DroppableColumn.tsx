@@ -1,9 +1,15 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Column, Task } from '@/types/types';
-import { useStore } from '@/store/useStore';
+import { Task, TaskStatus } from '@/lib/types';
+import { useStore } from '@/lib/store';
 import SortableTaskCard from './SortableTaskCard';
 import { Plus } from 'lucide-react';
+
+interface Column {
+  id: string;
+  title: string;
+  status: TaskStatus;
+}
 
 interface DroppableColumnProps {
   column: Column;

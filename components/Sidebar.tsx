@@ -1,67 +1,121 @@
-import { Home, Folder, Settings, User } from 'lucide-react';
+'use client';
+
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { workspaceFiles, sessionStats } from '@/lib/data';
 
 export default function Sidebar() {
-  const projects = [
-    { id: '1', name: 'Website Redesign', color: 'bg-orange-500' },
-    { id: '2', name: 'Mobile App', color: 'bg-blue-500' },
-    { id: '3', name: 'API Integration', color: 'bg-green-500' },
-    { id: '4', name: 'Marketing Campaign', color: 'bg-purple-500' },
-  ];
+  const [memoryExpanded, setMemoryExpanded] = useState(false);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-slate-700">
-        <h1 className="text-xl font-semibold text-slate-100">
-          Michel <span className="text-orange-500">Dashboard</span>
-        </h1>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/20 transition-all duration-200 hover:bg-orange-500/20">
-          <Home size={20} />
-          <span className="font-medium">Dashboard</span>
-        </button>
-
-        <div className="pt-4">
-          <div className="flex items-center justify-between px-4 py-2">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Projects
-            </h3>
-            <button className="text-slate-400 hover:text-orange-500 transition-colors duration-200">
-              <Folder size={16} />
-            </button>
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-[#0f1419] border-r border-slate-700 overflow-y-auto">
+      <div className="p-4 space-y-6">
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center text-center">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-2xl font-bold text-white">
+              M
+            </div>
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-yellow-500 rounded-full border-2 border-[#0f1419] flex items-center justify-center text-xs">
+              🏅
+            </div>
           </div>
-          <div className="space-y-1 mt-2">
-            {projects.map((project) => (
-              <button
-                key={project.id}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-all duration-200"
-              >
-                <div className={`w-2 h-2 rounded-full ${project.color}`} />
-                <span className="text-sm font-medium">{project.name}</span>
-              </button>
-            ))}
+          <h3 className="mt-3 text-lg font-semibold text-slate-50">Michel</h3>
+          <div className="flex items-center gap-2 text-sm text-green-500 mt-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            En ligne
+          </div>
+          {/* XP Bar */}
+          <div className="w-full mt-3">
+            <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <span>Niveau 5</span>
+              <span>50%</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div className="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full w-1/2"></div>
+            </div>
           </div>
         </div>
 
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-all duration-200">
-          <Settings size={20} />
-          <span className="font-medium">Settings</span>
-        </button>
-      </nav>
+        {/* Status Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span>💬</span>
+            <span>STATUS</span>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-3 border-l-4 border-cyan-500">
+            <p className="text-sm text-slate-300 italic">
+              Construction de quelque chose d'incroyable...
+            </p>
+          </div>
+        </div>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-slate-700">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 cursor-pointer">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold">
-            <User size={20} />
+        {/* Workspace Files */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span>📁</span>
+            <span>FICHIERS WORKSPACE</span>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-100">Michel</p>
-            <p className="text-xs text-slate-400">michel@dashboard.app</p>
+          <div className="space-y-1">
+            {workspaceFiles.map((file) => (
+              <div
+                key={file.name}
+                className="flex items-center justify-between p-2 rounded hover:bg-slate-700 cursor-pointer transition-all duration-200 hover:translate-x-1"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{file.icon}</span>
+                  <span className="text-sm text-slate-300">{file.name}</span>
+                </div>
+                <span className="text-xs text-slate-500">{file.timestamp}</span>
+              </div>
+            ))}
+            {/* Memory Folder */}
+            <div
+              className="flex items-center justify-between p-2 rounded hover:bg-slate-700 cursor-pointer transition-all duration-200"
+              onClick={() => setMemoryExpanded(!memoryExpanded)}
+            >
+              <div className="flex items-center gap-2">
+                {memoryExpanded ? (
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                )}
+                <span className="text-base">📁</span>
+                <span className="text-sm text-slate-300">
+                  MEMORY/ <span className="text-slate-500">(31 FILES)</span>
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Session Stats */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span>📊</span>
+            <span>STATS SESSION</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-slate-800 rounded-lg p-3">
+              <div className="text-xs text-slate-400 mb-1">MESSAGES</div>
+              <div className="text-2xl font-bold text-cyan-500">
+                {sessionStats.messages}
+              </div>
+            </div>
+            <div className="bg-slate-800 rounded-lg p-3">
+              <div className="text-xs text-slate-400 mb-1">OUTILS</div>
+              <div className="text-2xl font-bold text-cyan-500">
+                {sessionStats.tools}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-4 border-t border-slate-700 text-center">
+          <p className="text-xs text-slate-500">
+            v1.2.0 🌙 <span className="italic">Toujours curieux</span>
+          </p>
         </div>
       </div>
     </aside>

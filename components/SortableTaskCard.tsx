@@ -1,7 +1,9 @@
+'use client';
+
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Task } from '@/types/types';
-import { useStore } from '@/store/useStore';
+import { Task } from '@/lib/types';
+import { useStore } from '@/lib/store';
 import TaskCard from './TaskCard';
 
 interface SortableTaskCardProps {
@@ -9,7 +11,7 @@ interface SortableTaskCardProps {
 }
 
 export default function SortableTaskCard({ task }: SortableTaskCardProps) {
-  const { selectTask, openTaskModal } = useStore();
+  const { openTaskModal } = useStore();
 
   const {
     attributes,
@@ -28,8 +30,7 @@ export default function SortableTaskCard({ task }: SortableTaskCardProps) {
   };
 
   const handleClick = () => {
-    selectTask(task.id);
-    openTaskModal();
+    openTaskModal(task.id);
   };
 
   return (
@@ -40,6 +41,7 @@ export default function SortableTaskCard({ task }: SortableTaskCardProps) {
       {...listeners}
       className={isDragging ? 'opacity-50' : 'opacity-100'}
       onClick={handleClick}
+      suppressHydrationWarning
     >
       <TaskCard task={task} isDragging={isDragging} />
     </div>

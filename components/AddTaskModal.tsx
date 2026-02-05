@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useStore } from '@/store/useStore';
-import { Priority, Status } from '@/types/types';
-import { X, AlertCircle, User, Calendar, Tag } from 'lucide-react';
-import { addDays, format } from 'date-fns';
+import { X, AlertCircle, User, Tag } from 'lucide-react';
+import { useStore } from '@/lib/store';
+import { Priority, TaskStatus } from '@/lib/types';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
@@ -27,9 +26,6 @@ export default function AddTaskModal() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [assigneeName, setAssigneeName] = useState(availableAssignees[0]);
-  const [dueDate, setDueDate] = useState(
-    format(addDays(new Date(), 1), 'yyyy-MM-dd')
-  );
   const [tags, setTags] = useState('');
   const [titleError, setTitleError] = useState(false);
 
@@ -40,7 +36,6 @@ export default function AddTaskModal() {
       setDescription('');
       setPriority('medium');
       setAssigneeName(availableAssignees[0]);
-      setDueDate(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
       setTags('');
       setTitleError(false);
     }
@@ -71,16 +66,19 @@ export default function AddTaskModal() {
 
     // Create task
     addTask({
+      id: `task-${Date.now()}`,
       title: title.trim(),
       description: description.trim(),
-      status: addModalStatus as Status,
+      status: addModalStatus,
       priority,
-      assignee: {
-        name: assigneeName,
-        avatar: `/avatars/${assigneeName.toLowerCase().split(' ')[0]}.jpg`,
-      },
-      dueDate: new Date(dueDate),
+      assignedTo: assigneeName,
       tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      progress: 0,
+      subtasks: [],
+      links: [],
+      project: 'General',
     });
 
     closeAddModal();
@@ -92,11 +90,14 @@ export default function AddTaskModal() {
     }
   };
 
-  const getColumnTitle = (status: Status): string => {
-    const titles: Record<Status, string> = {
-      'todo': 'To Do',
-      'in-progress': 'In Progress',
-      'done': 'Done',
+  const getColumnTitle = (status: TaskStatus): string => {
+    const titles: Record<TaskStatus, string> = {
+      'ideas': 'Idées',
+      'backlog': 'Backlog',
+      'todo': 'À Faire',
+      'inprogress': 'En Cours',
+      'review': 'Révision',
+      'done': 'Terminé',
     };
     return titles[status];
   };
@@ -218,13 +219,10 @@ export default function AddTaskModal() {
           {/* Due Date */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              <Calendar size={16} className="inline mr-1" />
               Due Date
             </label>
             <input
               type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
             />
           </div>
