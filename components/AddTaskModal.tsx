@@ -216,17 +216,6 @@ export default function AddTaskModal() {
             </select>
           </div>
 
-          {/* Due Date */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Due Date
-            </label>
-            <input
-              type="date"
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
           {/* Tags */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">

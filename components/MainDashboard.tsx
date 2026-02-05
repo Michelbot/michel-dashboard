@@ -142,7 +142,15 @@ export default function MainDashboard() {
             <p className="text-sm text-slate-500 mb-4">
               Commencez à travailler sur une tâche pour la voir ici
             </p>
-            <button className="text-orange-500 hover:text-orange-400 text-sm font-medium transition-colors">
+            <button
+              onClick={() => {
+                const todoColumn = document.getElementById('column-todo');
+                if (todoColumn) {
+                  todoColumn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+              }}
+              className="text-orange-500 hover:text-orange-400 text-sm font-medium transition-colors cursor-pointer"
+            >
               Voir Toutes les Tâches →
             </button>
           </div>
