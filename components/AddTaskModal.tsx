@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, AlertCircle, User, Tag } from 'lucide-react';
+import { X, AlertCircle, User, Tag, Zap, Loader2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { useOpenClawStore } from '@/lib/openclawStore';
 import { Priority, TaskStatus } from '@/lib/types';
 
 const priorityStyles: Record<Priority, string> = {
@@ -17,10 +18,12 @@ const availableAssignees = [
   'Emily Watson',
   'David Park',
   'Alex Johnson',
+  'OpenClaw AI',
 ];
 
 export default function AddTaskModal() {
-  const { isAddModalOpen, addModalStatus, closeAddModal, addTask } = useStore();
+  const { isAddModalOpen, addModalStatus, closeAddModal, addTask, showToastMessage } = useStore();
+  const { connected, sendTaskToOpenClaw } = useOpenClawStore();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -28,6 +31,8 @@ export default function AddTaskModal() {
   const [assigneeName, setAssigneeName] = useState(availableAssignees[0]);
   const [tags, setTags] = useState('');
   const [titleError, setTitleError] = useState(false);
+  const [sendToOpenClaw, setSendToOpenClaw] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -38,6 +43,8 @@ export default function AddTaskModal() {
       setAssigneeName(availableAssignees[0]);
       setTags('');
       setTitleError(false);
+      setSendToOpenClaw(false);
+      setIsSending(false);
     }
   }, [isAddModalOpen]);
 
@@ -57,29 +64,53 @@ export default function AddTaskModal() {
 
   if (!isAddModalOpen || !addModalStatus) return null;
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     // Validate title
     if (title.trim().length === 0) {
       setTitleError(true);
       return;
     }
 
+    const taskId = `task-${Date.now()}`;
+    const taskTags = tags.split(',').map((tag) => tag.trim()).filter(Boolean);
+
     // Create task
     addTask({
-      id: `task-${Date.now()}`,
+      id: taskId,
       title: title.trim(),
       description: description.trim(),
       status: addModalStatus,
       priority,
-      assignedTo: assigneeName,
-      tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+      assignedTo: sendToOpenClaw ? 'OpenClaw AI' : assigneeName,
+      tags: taskTags,
       createdAt: new Date(),
       updatedAt: new Date(),
       progress: 0,
       subtasks: [],
       links: [],
       project: 'General',
+      autoCreated: false,
+      autoPickup: sendToOpenClaw,
     });
+
+    // Send to OpenClaw if enabled
+    if (sendToOpenClaw && connected) {
+      setIsSending(true);
+      const result = await sendTaskToOpenClaw({
+        id: taskId,
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        tags: taskTags,
+      });
+
+      if (result.success) {
+        showToastMessage('Tache envoyee a OpenClaw', 'success');
+      } else {
+        showToastMessage(`Erreur: ${result.message}`, 'error');
+      }
+      setIsSending(false);
+    }
 
     closeAddModal();
   };
@@ -204,9 +235,13 @@ export default function AddTaskModal() {
               Assignee
             </label>
             <select
-              value={assigneeName}
-              onChange={(e) => setAssigneeName(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              value={sendToOpenClaw ? 'OpenClaw AI' : assigneeName}
+              onChange={(e) => {
+                setAssigneeName(e.target.value);
+                setSendToOpenClaw(e.target.value === 'OpenClaw AI');
+              }}
+              disabled={sendToOpenClaw}
+              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 disabled:opacity-50"
             >
               {availableAssignees.map((name) => (
                 <option key={name} value={name}>
@@ -230,6 +265,46 @@ export default function AddTaskModal() {
               placeholder="e.g., frontend, react, urgent"
             />
           </div>
+
+          {/* OpenClaw Integration */}
+          <div className={`p-4 rounded-lg border transition-all ${
+            sendToOpenClaw
+              ? 'bg-orange-500/10 border-orange-500/30'
+              : 'bg-slate-900 border-slate-700'
+          }`}>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={sendToOpenClaw}
+                onChange={(e) => {
+                  setSendToOpenClaw(e.target.checked);
+                  if (e.target.checked) {
+                    setAssigneeName('OpenClaw AI');
+                  }
+                }}
+                disabled={!connected}
+                className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-orange-500 focus:ring-orange-500 focus:ring-offset-0 disabled:opacity-50"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Zap className={`w-5 h-5 ${sendToOpenClaw ? 'text-orange-400' : 'text-slate-400'}`} />
+                  <span className={`font-medium ${sendToOpenClaw ? 'text-orange-400' : 'text-slate-300'}`}>
+                    Envoyer a OpenClaw
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500 mt-1">
+                  {connected
+                    ? 'OpenClaw traitera cette tache automatiquement'
+                    : 'OpenClaw n\'est pas connecte'}
+                </p>
+              </div>
+              {!connected && (
+                <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded">
+                  Hors ligne
+                </span>
+              )}
+            </label>
+          </div>
         </div>
 
         {/* Footer Actions */}
@@ -237,14 +312,28 @@ export default function AddTaskModal() {
           <button
             onClick={closeAddModal}
             className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg font-medium hover:bg-slate-600 hover:scale-105 transition-all duration-200"
+            disabled={isSending}
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 hover:scale-105 transition-all duration-200"
+            disabled={isSending}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 hover:scale-105 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
           >
-            Create Task
+            {isSending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Envoi...
+              </>
+            ) : sendToOpenClaw ? (
+              <>
+                <Zap className="w-4 h-4" />
+                Create & Send
+              </>
+            ) : (
+              'Create Task'
+            )}
           </button>
         </div>
       </div>

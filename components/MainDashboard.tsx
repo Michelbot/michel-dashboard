@@ -1,10 +1,13 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import { useOpenClawStore } from '@/lib/openclawStore';
 import SearchBar from './SearchBar';
+import OpenClawStatus from './OpenClawStatus';
 
 export default function MainDashboard() {
   const tasks = useStore((state) => state.tasks);
+  const { connected, status, setActiveView } = useOpenClawStore();
 
   const activeTasks = tasks.filter((t) => t.status !== 'done').length;
   const totalTasks = tasks.length;
@@ -157,27 +160,73 @@ export default function MainDashboard() {
         )}
       </div>
 
-      {/* System Status */}
-      <div className="bg-[#1a1f2e] rounded-xl p-6 border border-slate-700">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">🔋</span>
-          <h3 className="text-lg font-semibold text-slate-50">État Système</h3>
+      {/* System Status + OpenClaw */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Traditional System Status */}
+        <div className="bg-[#1a1f2e] rounded-xl p-6 border border-slate-700">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">🔋</span>
+            <h3 className="text-lg font-semibold text-slate-50">État Système</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-green-500">✅</span>
+              <span className="text-slate-300">API Connectée</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-green-500">✅</span>
+              <span className="text-slate-300">WebSocket Actif</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-green-500">✅</span>
+              <span className="text-slate-300">Base de Données OK</span>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-green-500">✅</span>
-            <span className="text-slate-300">API Connectée</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-green-500">✅</span>
-            <span className="text-slate-300">WebSocket Actif</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-green-500">✅</span>
-            <span className="text-slate-300">Base de Données OK</span>
-          </div>
-        </div>
+
+        {/* OpenClaw Status */}
+        <OpenClawStatus onClick={() => setActiveView('terminal')} />
       </div>
+
+      {/* Quick Actions for OpenClaw */}
+      {connected && (
+        <div className="bg-[#1a1f2e] rounded-xl p-6 border border-slate-700">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">⚡</span>
+            <h3 className="text-lg font-semibold text-slate-50">Actions Rapides OpenClaw</h3>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button
+              onClick={() => setActiveView('terminal')}
+              className="p-4 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600 transition-all hover:scale-105"
+            >
+              <div className="text-2xl mb-2">💻</div>
+              <div className="text-sm text-slate-300">Terminal</div>
+            </button>
+            <button
+              onClick={() => setActiveView('logs')}
+              className="p-4 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600 transition-all hover:scale-105"
+            >
+              <div className="text-2xl mb-2">📜</div>
+              <div className="text-sm text-slate-300">Logs</div>
+            </button>
+            <button
+              onClick={() => setActiveView('messages')}
+              className="p-4 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600 transition-all hover:scale-105"
+            >
+              <div className="text-2xl mb-2">💬</div>
+              <div className="text-sm text-slate-300">Messages</div>
+            </button>
+            <button
+              onClick={() => setActiveView('memory')}
+              className="p-4 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-600 transition-all hover:scale-105"
+            >
+              <div className="text-2xl mb-2">🧠</div>
+              <div className="text-sm text-slate-300">Memory</div>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
