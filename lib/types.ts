@@ -16,6 +16,9 @@ export interface Link {
   icon: string; // '📁', '🔧', '💬', '🔀'
 }
 
+// Execution status for real-time task execution
+export type ExecutionState = 'idle' | 'queued' | 'executing' | 'paused' | 'review_needed';
+
 export interface Task {
   id: string;
   title: string;
@@ -34,6 +37,10 @@ export interface Task {
   links: Link[];
   autoCreated?: boolean;
   autoPickup?: boolean;
+  // Execution-related fields
+  executionId?: string;        // Current execution ID if running
+  executionState?: ExecutionState;
+  lastExecutionError?: string;
 }
 
 export interface Project {

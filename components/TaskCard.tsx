@@ -2,9 +2,11 @@
 
 import { Task, Priority } from '@/lib/types';
 import { useStore } from '@/lib/store';
+import { useExecutionStore } from '@/lib/executionStore';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useState } from 'react';
+import { ExecutionBadge } from './ExecutionStatus';
 
 interface TaskCardProps {
   task: Task;
@@ -20,8 +22,15 @@ const priorityStyles: Record<Priority, { bg: string; text: string; dot: string }
 export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
   const [showAllSubtasks, setShowAllSubtasks] = useState(false);
   const toggleSubtask = useStore((state) => state.toggleSubtask);
+  const getExecutionForTask = useExecutionStore((state) => state.getExecutionForTask);
+
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const visibleSubtasks = showAllSubtasks ? task.subtasks : task.subtasks.slice(0, 5);
+
+  // Get execution info
+  const execution = task.executionId ? getExecutionForTask(task.id) : undefined;
+  const executionProgress = execution?.progress ?? 0;
+  const isExecuting = task.executionState === 'executing' || execution?.status === 'running';
 
   return (
     <div
@@ -52,8 +61,8 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
         </span>
       </div>
 
-      {/* Auto Badges */}
-      {(task.autoCreated || task.autoPickup) && (
+      {/* Auto Badges & Execution Status */}
+      {(task.autoCreated || task.autoPickup || task.executionState) && (
         <div className="flex flex-wrap gap-2 mb-3">
           {task.autoCreated && (
             <span className="px-2 py-1 text-xs font-medium bg-purple-900/30 text-purple-300 rounded border border-purple-700 flex items-center gap-1">
@@ -65,6 +74,10 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
               🔄 Récupération auto
             </span>
           )}
+          <ExecutionBadge
+            executionState={task.executionState}
+            progress={executionProgress}
+          />
         </div>
       )}
 
@@ -78,10 +91,20 @@ export default function TaskCard({ task, isDragging = false }: TaskCardProps) {
         </div>
         <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full transition-all duration-300"
+            className={`h-2 rounded-full transition-all duration-300 ${
+              isExecuting
+                ? 'bg-gradient-to-r from-cyan-500 to-cyan-400 animate-pulse'
+                : 'bg-gradient-to-r from-orange-500 to-orange-400'
+            }`}
             style={{ width: `${task.progress}%` }}
           />
         </div>
+        {/* Execution step indicator */}
+        {isExecuting && execution?.currentStep && (
+          <p className="text-xs text-cyan-400 mt-1 truncate animate-pulse">
+            ⚡ {execution.currentStep}
+          </p>
+        )}
       </div>
 
       {/* Description */}

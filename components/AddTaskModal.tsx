@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, AlertCircle, User, Tag, Zap, Loader2 } from 'lucide-react';
+import { X, AlertCircle, User, Tag, Zap, Loader2, Play } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { useOpenClawStore } from '@/lib/openclawStore';
 import { Priority, TaskStatus } from '@/lib/types';
+import { isExecutionAgent } from '@/lib/execution/types';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
@@ -309,6 +310,23 @@ export default function AddTaskModal() {
               )}
             </label>
           </div>
+
+          {/* Auto-execution warning */}
+          {addModalStatus === 'inprogress' && isExecutionAgent(sendToOpenClaw ? 'OpenClaw AI' : assigneeName) && (
+            <div className="p-4 bg-cyan-900/20 border border-cyan-500/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Play className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-cyan-400">
+                    Exécution automatique activée
+                  </p>
+                  <p className="text-xs text-cyan-400/70 mt-1">
+                    Cette tâche sera créée dans &quot;En Cours&quot; et sera immédiatement envoyée à l&apos;agent pour exécution.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}

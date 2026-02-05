@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Priority, TaskStatus } from '@/lib/types';
 import { format } from 'date-fns';
-import { X, User, Tag, AlertCircle, Plus, Trash2, CheckSquare, ArrowRight } from 'lucide-react';
+import { X, User, Tag, AlertCircle, Plus, Trash2, CheckSquare, ArrowRight, Terminal, FileText } from 'lucide-react';
+import ExecutionLogs from './ExecutionLogs';
+import { isExecutionAgent } from '@/lib/execution/types';
 
 const priorityStyles: Record<Priority, string> = {
   high: 'bg-red-500/20 text-red-400 border-red-500/50',
@@ -44,6 +46,7 @@ export default function TaskModal() {
   const [editedAssigneeName, setEditedAssigneeName] = useState('');
   const [editedTags, setEditedTags] = useState('');
   const [newSubtaskText, setNewSubtaskText] = useState('');
+  const [activeTab, setActiveTab] = useState<'details' | 'execution'>('details');
 
   // Initialize form values when task changes - intentional sync with prop
   useEffect(() => {
@@ -105,21 +108,90 @@ export default function TaskModal() {
       onClick={handleOverlayClick}
     >
       <div className="bg-slate-800 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700 transition-all duration-200 animate-in fade-in zoom-in-95">
-        {/* Header */}
-        <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-100">Détails de la Tâche</h2>
-          <button
-            onClick={closeTaskModal}
-            className="p-2 rounded-lg hover:bg-slate-700 transition-colors duration-200"
-            aria-label="Fermer"
-            data-testid="close-detail-modal"
-          >
-            <X size={20} className="text-slate-400" />
-          </button>
+        {/* Header with Tabs */}
+        <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-semibold text-slate-100">Détails de la Tâche</h2>
+            <button
+              onClick={closeTaskModal}
+              className="p-2 rounded-lg hover:bg-slate-700 transition-colors duration-200"
+              aria-label="Fermer"
+              data-testid="close-detail-modal"
+            >
+              <X size={20} className="text-slate-400" />
+            </button>
+          </div>
+          {/* Tab navigation */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                activeTab === 'details'
+                  ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50'
+                  : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-600'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Détails
+            </button>
+            <button
+              onClick={() => setActiveTab('execution')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                activeTab === 'execution'
+                  ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                  : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-600'
+              }`}
+            >
+              <Terminal className="w-4 h-4" />
+              Exécution
+              {task.executionState === 'executing' && (
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Execution Tab */}
+          {activeTab === 'execution' && (
+            <div className="space-y-6">
+              {/* Agent warning */}
+              {!isExecutionAgent(task.assignedTo) && (
+                <div className="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-yellow-400">
+                        Tâche non assignée à un agent
+                      </p>
+                      <p className="text-xs text-yellow-400/70 mt-1">
+                        Pour activer l&apos;exécution automatique, assignez cette tâche à &quot;OpenClaw AI&quot; ou &quot;Michel&quot;.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Execution logs component */}
+              <ExecutionLogs
+                taskId={task.id}
+                executionId={task.executionId}
+              />
+
+              {/* Last error */}
+              {task.lastExecutionError && (
+                <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                  <p className="text-xs font-medium text-red-400 mb-1">Dernière erreur:</p>
+                  <p className="text-sm text-red-300">{task.lastExecutionError}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Details Tab */}
+          {activeTab === 'details' && (
+            <>
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -340,6 +412,8 @@ export default function TaskModal() {
             <p>Created: {format(task.createdAt, 'MMM d, yyyy h:mm a')}</p>
             <p>Last updated: {format(task.updatedAt, 'MMM d, yyyy h:mm a')}</p>
           </div>
+            </>
+          )}
         </div>
 
         {/* Footer Actions */}

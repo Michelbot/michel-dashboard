@@ -9,9 +9,13 @@ import MessagesPanel from '@/components/MessagesPanel';
 import MemoryViewer from '@/components/MemoryViewer';
 import SkillsActivity from '@/components/SkillsActivity';
 import { useOpenClawStore } from '@/lib/openclawStore';
+import { useExecutionSync } from '@/hooks/useExecutionSync';
 
 export default function Home() {
   const { activeView } = useOpenClawStore();
+
+  // Sync execution events with task store
+  useExecutionSync();
 
   // Render OpenClaw views
   const renderOpenClawView = () => {
