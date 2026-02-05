@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -130,6 +130,12 @@ export default function NewKanbanBoard() {
   const openTaskModal = useStore((state) => state.openTaskModal);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [mobileActiveColumn, setMobileActiveColumn] = useState<TaskStatus>('todo');
+  const [mounted, setMounted] = useState(false);
+
+  // Fix hydration mismatch with @dnd-kit
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Use filtered tasks for display
   const filteredTasks = getFilteredTasks();
@@ -185,6 +191,30 @@ export default function NewKanbanBoard() {
 
   // Get the active mobile column data
   const activeMobileColumnData = columns.find(c => c.status === mobileActiveColumn);
+
+  // Prevent hydration mismatch - show loading skeleton until mounted
+  if (!mounted) {
+    return (
+      <div className="p-6">
+        <div className="flex gap-4 overflow-x-auto">
+          {columns.map((column) => (
+            <div
+              key={column.id}
+              className="flex flex-col min-w-[300px] max-w-[320px] bg-[#0f1419] rounded-xl border border-slate-700 animate-pulse"
+            >
+              <div className="p-4 border-b border-slate-700">
+                <div className="h-6 bg-slate-700 rounded w-32"></div>
+              </div>
+              <div className="p-3 space-y-3 min-h-[200px]">
+                <div className="h-24 bg-slate-800 rounded-lg"></div>
+                <div className="h-24 bg-slate-800 rounded-lg"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DndContext
