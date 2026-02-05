@@ -107,11 +107,12 @@ export default function TaskModal() {
       <div className="bg-slate-800 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700 transition-all duration-200 animate-in fade-in zoom-in-95">
         {/* Header */}
         <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-100">Task Details</h2>
+          <h2 className="text-xl font-semibold text-slate-100">Détails de la Tâche</h2>
           <button
             onClick={closeTaskModal}
             className="p-2 rounded-lg hover:bg-slate-700 transition-colors duration-200"
-            aria-label="Close modal"
+            aria-label="Fermer"
+            data-testid="close-detail-modal"
           >
             <X size={20} className="text-slate-400" />
           </button>
@@ -122,14 +123,15 @@ export default function TaskModal() {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Title
+              Titre
             </label>
             <input
               type="text"
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter task title"
+              placeholder="Titre de la tâche"
+              data-testid="edit-task-title"
             />
           </div>
 
@@ -143,7 +145,8 @@ export default function TaskModal() {
               onChange={(e) => setEditedDescription(e.target.value)}
               rows={4}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 resize-none"
-              placeholder="Enter task description"
+              placeholder="Description de la tâche"
+              data-testid="edit-task-description"
             />
           </div>
 
@@ -151,7 +154,7 @@ export default function TaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <AlertCircle size={16} className="inline mr-1" />
-              Priority
+              Priorité
             </label>
             <div className="flex gap-2">
               {(['low', 'medium', 'high'] as Priority[]).map((priority) => (
@@ -178,14 +181,14 @@ export default function TaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <User size={16} className="inline mr-1" />
-              Assignee
+              Assigné à
             </label>
             <input
               type="text"
               value={editedAssigneeName}
               onChange={(e) => setEditedAssigneeName(e.target.value)}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter assignee name"
+              placeholder="Nom de l'assigné"
             />
           </div>
 
@@ -311,24 +314,24 @@ export default function TaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <Tag size={16} className="inline mr-1" />
-              Tags (comma-separated)
+              Tags (séparés par virgule)
             </label>
             <input
               type="text"
               value={editedTags}
               onChange={(e) => setEditedTags(e.target.value)}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-              placeholder="e.g., frontend, react, urgent"
+              placeholder="ex: frontend, react, urgent"
             />
           </div>
 
           {/* Comments Section */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Comments
+              Commentaires
             </label>
             <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-500 italic">
-              No comments yet
+              Aucun commentaire
             </div>
           </div>
 
@@ -344,21 +347,24 @@ export default function TaskModal() {
           <button
             onClick={handleDelete}
             className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg font-medium hover:bg-red-500/30 hover:scale-105 transition-all duration-200"
+            data-testid="delete-task-btn"
           >
-            Delete Task
+            Supprimer
           </button>
           <div className="flex gap-3">
             <button
               onClick={closeTaskModal}
               className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg font-medium hover:bg-slate-600 hover:scale-105 transition-all duration-200"
+              data-testid="cancel-edit-btn"
             >
-              Cancel
+              Annuler
             </button>
             <button
               onClick={handleSave}
               className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 hover:scale-105 transition-all duration-200"
+              data-testid="save-task-btn"
             >
-              Save Changes
+              Sauvegarder
             </button>
           </div>
         </div>

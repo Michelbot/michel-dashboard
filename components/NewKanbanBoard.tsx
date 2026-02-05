@@ -48,13 +48,25 @@ function SortableTaskCard({ task, onClick }: { task: Task; onClick: () => void }
     transition,
   };
 
+  // Handle click on the card (not drag)
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent if click originated from the drag handle (top 32px)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+
+    if (clickY > 32 && !isDragging) {
+      onClick();
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
+      data-testid={`task-card-${task.id}`}
       {...attributes}
       {...listeners}
-      onClick={onClick}
+      onClick={handleCardClick}
     >
       <TaskCard task={task} isDragging={isDragging} />
     </div>
@@ -97,6 +109,8 @@ function KanbanColumn({
         <button
           className="p-1.5 hover:bg-orange-500/20 hover:text-orange-400 rounded-lg transition-all duration-200 cursor-pointer"
           onClick={() => onAddTask(status)}
+          data-testid={`add-task-${status}`}
+          aria-label={`Ajouter une tâche à ${title}`}
         >
           <Plus className="w-4 h-4 text-slate-400 hover:text-orange-400" />
         </button>

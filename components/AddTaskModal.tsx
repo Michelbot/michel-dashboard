@@ -143,9 +143,9 @@ export default function AddTaskModal() {
         {/* Header */}
         <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">Create New Task</h2>
+            <h2 className="text-xl font-semibold text-slate-100">Nouvelle Tâche</h2>
             <p className="text-sm text-slate-400 mt-1">
-              Adding to: <span className="text-orange-400 font-medium">{getColumnTitle(addModalStatus)}</span>
+              Ajout dans: <span className="text-orange-400 font-medium">{getColumnTitle(addModalStatus)}</span>
             </p>
           </div>
           <button
@@ -162,7 +162,7 @@ export default function AddTaskModal() {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Title <span className="text-red-400">*</span>
+              Titre <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -177,13 +177,14 @@ export default function AddTaskModal() {
                 transition-all duration-200
                 ${titleError ? 'border-red-500 ring-2 ring-red-500/50' : 'border-slate-700'}
               `}
-              placeholder="Enter task title"
+              placeholder="Titre de la tâche"
               autoFocus
+              data-testid="task-title-input"
             />
             {titleError && (
               <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
                 <AlertCircle size={14} />
-                Title is required
+                Le titre est requis
               </p>
             )}
           </div>
@@ -198,7 +199,8 @@ export default function AddTaskModal() {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 resize-none"
-              placeholder="Enter task description"
+              placeholder="Description de la tâche"
+              data-testid="task-description-input"
             />
           </div>
 
@@ -206,7 +208,7 @@ export default function AddTaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <AlertCircle size={16} className="inline mr-1" />
-              Priority
+              Priorité
             </label>
             <div className="flex gap-2">
               {(['low', 'medium', 'high'] as Priority[]).map((p) => (
@@ -233,7 +235,7 @@ export default function AddTaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <User size={16} className="inline mr-1" />
-              Assignee
+              Assigné à
             </label>
             <select
               value={sendToOpenClaw ? 'OpenClaw AI' : assigneeName}
@@ -256,14 +258,15 @@ export default function AddTaskModal() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
               <Tag size={16} className="inline mr-1" />
-              Tags (comma-separated)
+              Tags (séparés par virgule)
             </label>
             <input
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-              placeholder="e.g., frontend, react, urgent"
+              placeholder="ex: frontend, react, urgent"
+              data-testid="task-tags-input"
             />
           </div>
 
@@ -314,13 +317,15 @@ export default function AddTaskModal() {
             onClick={closeAddModal}
             className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg font-medium hover:bg-slate-600 hover:scale-105 transition-all duration-200"
             disabled={isSending}
+            data-testid="cancel-task-btn"
           >
-            Cancel
+            Annuler
           </button>
           <button
             onClick={handleCreate}
             disabled={isSending}
             className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 hover:scale-105 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
+            data-testid="create-task-btn"
           >
             {isSending ? (
               <>
@@ -330,10 +335,10 @@ export default function AddTaskModal() {
             ) : sendToOpenClaw ? (
               <>
                 <Zap className="w-4 h-4" />
-                Create & Send
+                Créer et Envoyer
               </>
             ) : (
-              'Create Task'
+              'Créer la tâche'
             )}
           </button>
         </div>
